@@ -1,0 +1,16 @@
+import path from 'node:path';
+import fs from 'node:fs';
+import { openDb } from '../lib/db';
+import { seedDatabase } from '../lib/seed';
+
+// LEGACYAI_DB is canonical; the retired GLADOS_DB spelling still works.
+const dbPath = process.env.LEGACYAI_DB ?? process.env.GLADOS_DB ?? path.join(process.cwd(), 'data', 'legacyai.db');
+fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+const db = openDb(dbPath);
+seedDatabase(db);
+console.log(`Seeded ${dbPath}`);
+console.log(`  departments: ${db.departments.all().length}`);
+console.log(`  agents:      ${db.agents.all().length}`);
+console.log(`  tools:       ${db.tools.all().length}`);
+console.log(`  roadmap:     ${db.roadmap.all().length}`);
+db.close();

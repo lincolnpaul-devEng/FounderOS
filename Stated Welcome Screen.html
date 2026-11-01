@@ -1,0 +1,297 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Stated Welcome Screen</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Nunito:wght@800&display=swap">
+<style>
+/* Layout: a fixed design stage (1000x700, or 520x760 on narrow screens) scaled to fit.
+   The logo is a canvas; the form sits beside it (wide) or below it (narrow). */
+:root {
+  --bg: #0b0b0b;
+  --bg-glow: #181818;
+  --disc: #d9d9d9;
+  --field: #1d1d1d;
+  --field-edge: #292929;
+  --muted: #6c6c6c;
+  --text: #f1f1f1;
+  --teal-dark: #178c78;
+  --teal-light: #38dbc1;
+  --font-display: "Nunito", "Nunito Sans", "Trebuchet MS", system-ui, sans-serif;
+  --font-ui: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  box-sizing: border-box;
+  background: var(--bg);
+  background-image: radial-gradient(ellipse 70% 60% at 50% 45%, var(--bg-glow), var(--bg) 75%);
+  color: var(--text);
+  font-family: var(--font-ui);
+  overflow: hidden;
+  position: relative;
+}
+.stage { position: absolute; left: 50%; top: 50%; width: 1000px; height: 700px; transform-origin: 50% 50%; }
+.logo-canvas { position: absolute; left: 0; top: 0; width: 560px; height: 640px; pointer-events: none; transition: opacity .3s linear; will-change: transform; }
+#loaderCanvas { width: 300px; height: 340px; }
+.form { position: absolute; width: 260px; height: 270px; transition: opacity .3s linear; }
+.form > * { position: absolute; left: 0; right: 0; margin: 0 auto; }
+.pre { opacity: 0 !important; }
+h1 {
+  top: 0; height: 40px; line-height: 40px; text-align: center; white-space: nowrap;
+  font: 800 26px/40px var(--font-display); letter-spacing: -0.01em; color: var(--text);
+}
+.field {
+  width: 204px; height: 40px; box-sizing: border-box; padding: 0 12px;
+  background: linear-gradient(180deg, #212121, var(--field)); border: 1px solid var(--field-edge); border-radius: 3px;
+  color: var(--text); font: 400 13px/1 var(--font-ui); text-align: center; outline: none; caret-color: var(--teal-light);
+}
+.field::placeholder { color: var(--muted); opacity: 1; }
+.field:focus-visible { border-color: var(--teal-dark); box-shadow: 0 0 0 2px rgba(56,219,193,.25); }
+#nameField { top: 76px; }
+#passField { top: 126px; }
+.enter {
+  top: 186px; width: 204px; height: 44px; border: 0; border-radius: 3px; cursor: pointer;
+  background: linear-gradient(100deg, var(--teal-dark), var(--teal-light)); color: #fff;
+  font: 700 15px/1 var(--font-ui); letter-spacing: .01em; transition: filter .2s, transform .15s, background .25s, color .25s;
+}
+.enter:hover { filter: brightness(1.08); }
+.enter:focus-visible { outline: 2px solid var(--teal-light); outline-offset: 3px; }
+.enter.pressed { filter: brightness(.62) saturate(.9); transform: scale(.97); }
+.enter.busy { background: #292929; color: #8b8b8b; filter: none; transform: none; cursor: default; }
+.remember { top: 244px; width: 204px; height: 20px; display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--muted); font: 400 12px/1 var(--font-ui); user-select: none; }
+.remember input { position: absolute; opacity: 0; width: 0; height: 0; }
+.track { position: relative; flex: none; width: 28px; height: 18px; border-radius: 9px; background: #343434; transition: background .2s; }
+.track::after { content: ""; position: absolute; left: 2px; top: 2px; width: 14px; height: 14px; border-radius: 50%; background: #ececec; transition: transform .2s; }
+.remember input:checked + .track { background: var(--teal-dark); }
+.remember input:checked + .track::after { transform: translateX(10px); }
+.remember input:focus-visible + .track { outline: 2px solid var(--teal-light); outline-offset: 2px; }
+.shake { animation: shake .35s; }
+@keyframes shake { 20%{transform:translateX(-6px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(2px)} }
+.replay {
+  position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  background: none; border: 1px solid #262626; border-radius: 3px; color: #707070; font: 500 12px/1 var(--font-ui);
+  padding: 8px 12px; cursor: pointer; letter-spacing: .04em; z-index: 5;
+}
+.replay:hover { color: #bdbdbd; border-color: #3a3a3a; }
+.replay:focus-visible { outline: 2px solid var(--teal-light); outline-offset: 2px; }
+</style>
+
+<div class="stage" id="stage">
+  <canvas class="logo-canvas" id="logoCanvas" aria-label="Stated logo: three discs with motion trails" role="img"></canvas>
+  <canvas class="logo-canvas" id="loaderCanvas" aria-hidden="true" style="opacity:0"></canvas>
+  <form class="form" id="form" autocomplete="off" novalidate>
+    <h1 id="title">Welcome to Stated</h1>
+    <input class="field" id="nameField" type="text" placeholder="Name" aria-label="Name" autocomplete="off">
+    <input class="field" id="passField" type="password" placeholder="Password" aria-label="Password" autocomplete="off">
+    <button class="enter" id="enterBtn" type="submit">Enter</button>
+    <label class="remember" id="remember"><input type="checkbox" id="rememberBox"><span class="track"></span><span>Remain in the system</span></label>
+  </form>
+</div>
+<button class="replay" id="replay" type="button">Replay</button>
+
+<script>
+(function () {
+  var STR = 1.4, R0 = 102, RD = 35, T0 = 2.1;
+  var KEYS = ['R','ds','phi','sigma','headA','tailA','tube','ghost','m','e'];
+  function K(t) { var o = { t: t }; for (var i = 0; i < KEYS.length; i++) o[KEYS[i]] = arguments[i + 1]; return o; }
+  var ease = function (u) { return u * u * (3 - 2 * u); };
+  function sample(kfs, t) {
+    if (t <= kfs[0].t) return kfs[0];
+    var last = kfs[kfs.length - 1];
+    if (t >= last.t) return last;
+    var i = 0; while (kfs[i + 1].t < t) i++;
+    var a = kfs[i], b = kfs[i + 1], u = ease((t - a.t) / (b.t - a.t)), o = {};
+    KEYS.forEach(function (k) { o[k] = a[k] + (b[k] - a[k]) * u; });
+    return o;
+  }
+  //        t     R    ds   phi  sigma headA tailA tube ghost m  e
+  var INTRO = [
+    K(2.15, .08, 0,   -40,   0,  1,   0,   0, 0,  0, 0),
+    K(2.25, .22, .32, -25, -25,  1,   0,   0, .6, 0, 0),
+    K(2.40, .55, .85,  -5, -40,  1,   0,   0, 1,  0, 0),
+    K(2.55, .75, 1,   -15, -35,  1,   0,   0, 1,  0, 0),
+    K(2.70, 1.0, 1,   -15, -30,  1,   0,   0, .8, 0, 0),
+    K(2.85, 1.12,1,     0,  75,  .7, 0,   1, .2, 0, 1),
+    K(3.00, .62, 1,    60, -55, .75, .35,  1, 0,  0, 0),
+    K(3.45, .62, 1,    60, -55, .75, .35,  1, 0,  0, 0),
+    K(3.60, 1.0, 1,     0,  75,  .7, 0,   1, 0,  0, 1),
+    K(3.85, 1.0, 1,     0,  75,  .7, 0,   1, 0,  0, 1),
+    K(4.20, 1.0, 1,     0,  75,  .7, 0,   1, 0,  1, 1)
+  ];
+  var LOADER = [
+    K(0,    .10, .28, -40,   0, 1,  0,  0, 0,  1, 0),
+    K(.25,  .30, .5,  -20, -30, 1,  0,  0, .8, 1, 0),
+    K(.50,  .60, .8,  -10, -40, 1,  0,  0, 1,  1, 0),
+    K(.75,  .62, 1,   60, -55, .75, .35, 1, 0,  1, 0),
+    K(1.00, .62, 1,   60, -55, .75, .35, 1, 0,  1, 0),
+    K(1.30, 1.0, 1,    0,  75,  .7, 0, 1, 0,  1, 1),
+    K(2.30, 1.0, 1,    0,  75,  .7, 0, 1, 0,  1, 1),
+    K(2.55, .62, 1,   60, -55, .75, .35, 1, 0,  1, 0),
+    K(3.00, .62, 1,   60, -55, .75, .35, 1, 0,  1, 0),
+    K(3.40, 1.0, 1,    0,  75,  .7, 0, 1, 0,  1, 1)
+  ];
+
+  function Logo(canvas, w, h) {
+    this.c = canvas; this.w = w; this.h = h;
+    this.ctx = canvas.getContext('2d');
+    this.tc = document.createElement('canvas');
+    this.tctx = this.tc.getContext('2d', { willReadFrequently: true });
+  }
+  Logo.prototype.resize = function (k) {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var s = Math.min(k * dpr, 1500 / Math.max(this.w, this.h));
+    this.c.width = this.tc.width = Math.max(2, Math.round(this.w * s));
+    this.c.height = this.tc.height = Math.max(2, Math.round(this.h * s));
+    this.s = this.c.width / this.w;
+    var n = new Uint8Array(this.c.width * this.c.height);
+    for (var i = 0; i < n.length; i++) n[i] = (Math.random() * 255) | 0;
+    this.noise = n;
+  };
+  Logo.prototype.draw = function (p, S, cx, cy, tone) {
+    var ctx = this.ctx, tctx = this.tctx, W = this.c.width, H = this.c.height, s = this.s, i;
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W, H);
+    var rad = Math.PI / 180, pts = [], ends = [];
+    var sg = p.sigma < 0 ? -1 : 1, fr = Math.abs(p.sigma) / 120;
+    function vert(deg) { var q = deg * rad; return [Math.sin(q) * p.R * R0, -Math.cos(q) * p.R * R0]; }
+    for (i = 0; i < 3; i++) {
+      var th = p.phi + 120 * i, pa = vert(th), arc = vert(th + p.sigma), nx = vert(th + sg * 120);
+      var edge = [pa[0] + (nx[0] - pa[0]) * fr, pa[1] + (nx[1] - pa[1]) * fr];
+      pts.push(pa);
+      ends.push([arc[0] * (1 - p.e) + edge[0] * p.e, arc[1] * (1 - p.e) + edge[1] * p.e]);
+    }
+    var r = RD * p.ds;
+    if (r < 0.3) return;
+    function setT(c) { c.setTransform(s * S, 0, 0, s * S * STR, W / 2, H / 2); }
+    if (p.tube > 0.01) {
+      tctx.setTransform(1, 0, 0, 1, 0, 0); tctx.clearRect(0, 0, W, H);
+      setT(tctx); tctx.lineCap = 'round'; tctx.lineWidth = 2 * r;
+      for (i = 0; i < 3; i++) {
+        var g = tctx.createLinearGradient(pts[i][0], pts[i][1], ends[i][0], ends[i][1]);
+        g.addColorStop(0, 'rgba(255,255,255,' + (p.headA * p.tube) + ')');
+        g.addColorStop(1, 'rgba(255,255,255,' + (p.tailA * p.tube) + ')');
+        tctx.strokeStyle = g; tctx.beginPath();
+        tctx.moveTo(pts[i][0], pts[i][1]); tctx.lineTo(ends[i][0], ends[i][1]); tctx.stroke();
+      }
+      tctx.setTransform(1, 0, 0, 1, 0, 0);
+      var id = tctx.getImageData(0, 0, W, H), d = id.data, n = this.noise, v = Math.round(90 + 115 * tone);
+      for (var q = 0, j = 3; q < n.length; q++, j += 4) {
+        var o = (d[j] - n[q]) * 3 + 110; if (d[j] === 0) o = 0; d[j - 3] = d[j - 2] = d[j - 1] = v; d[j] = o < 0 ? 0 : (o > 255 ? 255 : o);
+      }
+      tctx.putImageData(id, 0, 0);
+      ctx.drawImage(this.tc, 0, 0);
+    }
+    setT(ctx);
+    var col = Math.round(80 + 137 * tone), fill = 'rgb(' + col + ',' + col + ',' + col + ')';
+    ctx.fillStyle = fill;
+    if (p.ghost > 0.02) {
+      for (i = 0; i < 3; i++) for (var k = 5; k >= 1; k--) {
+        var f = k / 5 * 0.3;
+        ctx.globalAlpha = 0.2 * p.ghost * (1 - k / 6);
+        ctx.beginPath();
+        ctx.arc(pts[i][0] + (ends[i][0] - pts[i][0]) * f, pts[i][1] + (ends[i][1] - pts[i][1]) * f, r, 0, 6.2832);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+    for (i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(pts[i][0], pts[i][1], r, 0, 6.2832); ctx.fill(); }
+  };
+
+  var $ = function (id) { return document.getElementById(id); };
+  var stage = $('stage'), form = $('form'), logoC = $('logoCanvas'), loadC = $('loaderCanvas');
+  var title = $('title'), nameF = $('nameField'), passF = $('passField'), enter = $('enterBtn'), remember = $('remember');
+  var mainLogo = new Logo(logoC, 560, 640), loader = new Logo(loadC, 300, 340);
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var L, kScale = 1, dirty = true;
+
+  function layout() {
+    var narrow = window.innerWidth < 640;
+    L = narrow
+      ? { W: 520, H: 760, hx: 260, hy: 380, hS: 1.0, ax: 260, ay: 215, aS: .8, fx: 130, fy: 420, cx: 260, cy: 380 }
+      : { W: 1000, H: 700, hx: 500, hy: 350, hS: 1.18, ax: 286, ay: 352, aS: 1, fx: 585, fy: 207, cx: 500, cy: 350 };
+    kScale = Math.min(window.innerWidth / L.W, window.innerHeight / L.H, 1.8);
+    stage.style.width = L.W + 'px'; stage.style.height = L.H + 'px';
+    stage.style.transform = 'translate(-50%,-50%) scale(' + kScale + ')';
+    form.style.left = L.fx + 'px'; form.style.top = L.fy + 'px';
+    loadC.style.transform = 'translate(' + (L.cx - 150) + 'px,' + (L.cy - 170) + 'px)';
+    mainLogo.resize(kScale); loader.resize(kScale); dirty = true;
+  }
+
+  var startMs = 0, frozen = null, fired = 0, demoOn = true, submitAt = null;
+  var ev = [];
+  function reveal(el, kf, ms) { el.classList.remove('pre'); el.animate(kf, { duration: ms, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'both' }); }
+  function typeInto(el, s) { return function () { if (demoOn) el.value = s; }; }
+  ev.push([4.00, function () { title.classList.remove('pre'); title.animate([{ clipPath: 'inset(-20% 100% -20% 0)' }, { clipPath: 'inset(-20% 0% -20% 0)' }], { duration: 420, easing: 'cubic-bezier(.3,.6,.3,1)', fill: 'both' }); }]);
+  ev.push([4.60, function () { reveal(nameF, [{ transform: 'scale(.3,.14)', opacity: .6 }, { transform: 'none', opacity: 1 }], 300); }]);
+  ev.push([4.75, function () { reveal(passF, [{ transform: 'scale(.3,.1)', opacity: .5 }, { transform: 'none', opacity: 1 }], 300); }]);
+  ev.push([4.95, function () { reveal(enter, [{ transform: 'scale(.22,.18)', opacity: 1 }, { transform: 'none', opacity: 1 }], 320); }]);
+  ev.push([5.35, function () { reveal(remember, [{ opacity: 0 }, { opacity: 1 }], 350); }]);
+  ['A', 'Ad', 'Adm', 'Admi', 'Admin'].forEach(function (s, i) { ev.push([6.35 + i * .1, typeInto(nameF, s)]); });
+  ['•', '••', '•••', '••••'].forEach(function (s, i) {
+    var t = [6.85, 7.0, 7.2, 7.4][i];
+    ev.push([t, function () { if (demoOn) passF.value = 'pass'.slice(0, i + 1); }]);
+  });
+  ev.push([7.55, function () { if (demoOn) startLoading(); }]);
+
+  function resetAll() {
+    [title, nameF, passF, enter, remember].forEach(function (el) {
+      el.getAnimations().forEach(function (a) { a.cancel(); });
+      el.classList.add('pre'); el.classList.remove('pressed', 'busy', 'shake');
+    });
+    nameF.value = ''; passF.value = ''; $('rememberBox').checked = false;
+    form.style.opacity = 1; logoC.style.opacity = 1; loadC.style.opacity = 0;
+    submitAt = null; fired = 0; demoOn = !reduce; dirty = true;
+    startMs = performance.now() - (reduce ? (5.6 - T0) * 1000 : 0);
+  }
+  function startLoading() { if (submitAt === null) { submitAt = performance.now(); demoOn = false; dirty = true; } }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (submitAt !== null) return;
+    if (!nameF.value.trim()) { nameF.classList.remove('shake'); void nameF.offsetWidth; nameF.classList.add('shake'); nameF.focus(); return; }
+    startLoading();
+  });
+  [nameF, passF].forEach(function (el) {
+    el.addEventListener('pointerdown', stopDemo); el.addEventListener('focus', stopDemo);
+  });
+  function stopDemo() { if (demoOn) { demoOn = false; if (submitAt === null) { nameF.value = ''; passF.value = ''; } } }
+  $('replay').addEventListener('click', resetAll);
+
+  function now() { return frozen !== null ? frozen : T0 + (performance.now() - startMs) / 1000; }
+  var lastKey = '';
+  function frame() {
+    var t = now();
+    while (fired < ev.length && ev[fired][0] <= t) { ev[fired][1](); fired++; }
+    var lt = submitAt === null ? -1 : (frozen !== null ? Math.max(0, frozen - 7.55) : (performance.now() - submitAt) / 1000);
+    var tone = 1;
+    if (lt >= 0) {
+      enter.classList.toggle('pressed', lt < .25); enter.classList.toggle('busy', lt >= .25);
+      tone = 1 - .65 * ease(Math.min(1, Math.max(0, (lt - .3) / .3)));
+      form.style.opacity = lt >= .75 ? 0 : (lt >= .45 ? .18 : 1);
+      if (lt >= .85) logoC.style.opacity = 0;
+    }
+    var animating = t < 4.3 || (lt >= 0 && lt < 1.3);
+    if (animating || dirty) {
+      var p = sample(INTRO, t), S = L.hS + (L.aS - L.hS) * p.m;
+      var cx = L.hx + (L.ax - L.hx) * p.m, cy = L.hy + (L.ay - L.hy) * p.m;
+      logoC.style.transform = 'translate(' + (cx - 280) + 'px,' + (cy - 320) + 'px)';
+      mainLogo.draw(p, S, cx, cy, tone); dirty = false;
+    }
+    if (lt >= .45) {
+      loadC.style.opacity = 1;
+      var q = lt - .45; if (q > 3.4) q = 1.3 + (q - 1.3) % 2.1;
+      var lp = sample(LOADER, q);
+      loader.draw(lp, .4, 0, 0, 1);
+    }
+    requestAnimationFrame(frame);
+  }
+  window.__stated = { freeze: function (t) { frozen = t; resetAll(); frozen = t; }, unfreeze: function () { frozen = null; } };
+  window.addEventListener('resize', layout);
+  layout(); resetAll();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { dirty = true; });
+  requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>
